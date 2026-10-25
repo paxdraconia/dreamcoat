@@ -1,0 +1,27 @@
+<resources>
+    <style name="Theme.Dreamcoat" parent="Theme.Material3Expressive.Dark.NoActionBar">
+        <item name="colorPrimary">@color/electric_teal</item>
+        <item name="colorOnPrimary">@color/deep_space_blue</item>
+        <item name="colorPrimaryContainer">@color/electric_teal_dark</item>
+        <item name="colorOnPrimaryContainer">@color/white</item>
+        <item name="colorSecondary">@color/electric_teal</item>
+        <item name="colorOnSecondary">@color/deep_space_blue</item>
+        <item name="colorSecondaryContainer">@color/deep_space_blue_light</item>
+        <item name="colorOnSecondaryContainer">@color/cloud_gray</item>
+        <item name="colorTertiary">@color/marigold</item>
+        <item name="colorOnTertiary">@color/deep_space_blue</item>
+        <item name="colorTertiaryContainer">@color/marigold_container</item>
+        <item name="colorOnTertiaryContainer">@color/deep_space_blue</item>
+        <item name="android:colorBackground">@color/deep_space_blue_dark</item>
+        <item name="colorSurface">@color/deep_space_blue_dark</item>
+        <item name="colorOnSurface">@color/cloud_gray</item>
+        <item name="colorOnSurfaceVariant">#C9D2DE</item>
+        <item name="colorSurfaceContainerLowest">#0C1424</item>
+        <item name="colorSurfaceContainerLow">@color/deep_space_blue</item>
+        <item name="colorSurfaceContainer">@color/deep_space_blue</item>
+        <item name="colorSurfaceContainerHigh">@color/deep_space_blue_light</item>
+        <item name="colorOutline">#4A5B78</item>
+        <item name="android:statusBarColor">@color/deep_space_blue_dark</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

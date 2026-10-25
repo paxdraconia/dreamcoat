@@ -1,0 +1,62 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'com.dreamcoat'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.dreamcoat'
+        // BluetoothHidDevice was added in API 28.
+        minSdk 28
+        targetSdk 34
+        versionCode 3
+        versionName '1.1.0'
+    }
+
+    // Release key lives outside the repo: %USERPROFILE%\.dreamcoat\release.jks, with its
+    // password in %USERPROFILE%\.gradle\gradle.properties (DREAMCOAT_STORE_PASSWORD etc.).
+    signingConfigs {
+        release {
+            if (project.hasProperty('DREAMCOAT_STORE_FILE')) {
+                storeFile file(DREAMCOAT_STORE_FILE)
+                storePassword DREAMCOAT_STORE_PASSWORD
+                keyAlias DREAMCOAT_KEY_ALIAS
+                keyPassword DREAMCOAT_KEY_PASSWORD
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (project.hasProperty('DREAMCOAT_STORE_FILE')) {
+                signingConfig signingConfigs.release
+            }
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+dependencies {
+    implementation project(':sdk')
+    implementation 'androidx.core:core-ktx:1.16.0'
+    implementation 'androidx.appcompat:appcompat:1.7.0'
+    implementation 'androidx.activity:activity-ktx:1.9.3'
+    implementation 'com.google.android.material:material:1.14.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
+    implementation 'androidx.media:media:1.7.0'
+    // Pixel Watch remote (Wearable Data Layer; works offline over Bluetooth).
+    implementation 'com.google.android.gms:play-services-wearable:19.0.0'
+}

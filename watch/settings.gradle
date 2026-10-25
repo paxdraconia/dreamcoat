@@ -1,0 +1,18 @@
+// Separate build for the Pixel Watch app. It needs AGP 9 / compileSdk 37 for Wear OS one-handed
+// gestures, which the root build (old Jacquard SDK on AGP 8) can't move to safely.
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+rootProject.name = 'dreamcoat-watch'
+include ':app'

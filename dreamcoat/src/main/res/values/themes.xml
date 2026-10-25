@@ -1,0 +1,37 @@
+<resources>
+    <style name="Theme.Dreamcoat" parent="Theme.Material3Expressive.Light.NoActionBar">
+        <item name="colorPrimary">@color/deep_space_blue</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorPrimaryContainer">@color/deep_space_blue_light</item>
+        <item name="colorOnPrimaryContainer">@color/white</item>
+        <item name="colorSecondary">@color/electric_teal_dark</item>
+        <item name="colorOnSecondary">@color/white</item>
+        <item name="colorSecondaryContainer">@color/teal_container</item>
+        <item name="colorOnSecondaryContainer">@color/deep_space_blue</item>
+        <item name="colorTertiary">@color/marigold</item>
+        <item name="colorOnTertiary">@color/deep_space_blue</item>
+        <item name="colorTertiaryContainer">@color/marigold_container</item>
+        <item name="colorOnTertiaryContainer">@color/deep_space_blue</item>
+        <item name="android:colorBackground">@color/cloud_gray</item>
+        <item name="colorSurface">@color/cloud_gray</item>
+        <item name="colorOnSurface">@color/charcoal</item>
+        <item name="colorOnSurfaceVariant">@color/charcoal</item>
+        <item name="colorSurfaceContainerLowest">@color/white</item>
+        <item name="colorSurfaceContainerLow">@color/white</item>
+        <item name="colorSurfaceContainer">#EBEEF2</item>
+        <item name="colorSurfaceContainerHigh">#E3E7EC</item>
+        <item name="colorOutline">@color/outline_light</item>
+        <item name="android:statusBarColor">@color/cloud_gray</item>
+        <item name="android:windowLightStatusBar">true</item>
+    </style>
+
+    <style name="Section">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">20dp</item>
+        <item name="android:layout_marginBottom">6dp</item>
+        <item name="android:textAppearance">?attr/textAppearanceTitleSmall</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">?attr/colorSecondary</item>
+    </style>
+</resources>

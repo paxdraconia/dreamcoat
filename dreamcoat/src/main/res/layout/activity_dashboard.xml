@@ -1,0 +1,421 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/drawerLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
+
+    <!-- ===== Main: slide controls ===== -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="?android:attr/colorBackground"
+        android:orientation="vertical">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            style="@style/Widget.Material3Expressive.Toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:navigationContentDescription="@string/open_menu"
+            app:navigationIcon="@drawable/ic_menu"
+            app:title="@string/app_name"
+            app:titleTextAppearance="?attr/textAppearanceTitleLarge">
+
+            <com.google.android.material.chip.Chip
+                android:id="@+id/statusChip"
+                style="@style/Widget.Material3.Chip.Assist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginEnd="12dp"
+                android:text="@string/chip_not_connected"
+                app:chipIcon="@drawable/ic_bluetooth" />
+        </com.google.android.material.appbar.MaterialToolbar>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/next"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="4dp"
+            android:layout_weight="1"
+            android:backgroundTint="?attr/colorTertiary"
+            android:text="@string/next"
+            android:textAllCaps="false"
+            android:textColor="?attr/colorOnTertiary"
+            android:textSize="44sp"
+            android:textStyle="bold"
+            app:cornerRadius="48dp"
+            app:icon="@drawable/ic_arrow_forward"
+            app:iconGravity="textEnd"
+            app:iconSize="48dp"
+            app:iconTint="?attr/colorOnTertiary" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/back"
+            style="@style/Widget.Material3Expressive.Button.TonalButton"
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="12dp"
+            android:text="@string/back"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            app:cornerRadius="32dp"
+            app:icon="@drawable/ic_arrow_back"
+            app:iconGravity="textStart"
+            app:iconSize="28dp" />
+
+        <com.google.android.material.button.MaterialButtonGroup
+            android:layout_width="match_parent"
+            android:layout_height="72dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="8dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/black"
+                style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/black_screen"
+                app:cornerRadius="32dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/esc"
+                style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/key_esc"
+                app:cornerRadius="32dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/present"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:backgroundTint="?attr/colorSecondary"
+                android:text="@string/present"
+                android:textColor="?attr/colorOnSecondary"
+                android:textStyle="bold"
+                app:cornerRadius="32dp" />
+        </com.google.android.material.button.MaterialButtonGroup>
+
+        <!-- Compact air mouse: hold the centre pad to aim; side pads click (hold to drag). -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="104dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/clickLeft"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/pad_bg"
+                android:gravity="center"
+                android:text="@string/left_click"
+                android:textAppearance="?attr/textAppearanceLabelLarge" />
+
+            <TextView
+                android:id="@+id/aim"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginHorizontal="8dp"
+                android:layout_weight="2"
+                android:background="@drawable/pad_bg"
+                android:gravity="center"
+                android:text="@string/hold_to_aim"
+                android:textAppearance="?attr/textAppearanceTitleMedium" />
+
+            <TextView
+                android:id="@+id/clickRight"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/pad_bg"
+                android:gravity="center"
+                android:text="@string/right_click"
+                android:textAppearance="?attr/textAppearanceLabelLarge" />
+        </LinearLayout>
+
+        <!-- Dictation bar, pinned to the bottom -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:background="@drawable/bar_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="6dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/mic"
+                style="@style/Widget.Material3Expressive.Button.IconButton.Tonal"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:contentDescription="@string/dictate"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:padding="0dp"
+                app:icon="@drawable/ic_mic"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp" />
+
+            <EditText
+                android:id="@+id/prompt"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="8dp"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="@string/prompt_hint"
+                android:importantForAutofill="no"
+                android:inputType="textMultiLine|textCapSentences"
+                android:maxLines="4"
+                android:minHeight="48dp"
+                android:textAppearance="?attr/textAppearanceBodyLarge" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/queuePrompt"
+                style="@style/Widget.Material3Expressive.Button.IconButton.Standard"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:contentDescription="@string/queue_prompt"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:padding="0dp"
+                android:visibility="gone"
+                app:icon="@drawable/ic_queue"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/send"
+                style="@style/Widget.Material3Expressive.Button.IconButton.Filled"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:backgroundTint="?attr/colorTertiary"
+                android:contentDescription="@string/type_now"
+                android:insetLeft="0dp"
+                android:insetRight="0dp"
+                android:padding="0dp"
+                app:icon="@drawable/ic_send"
+                app:iconGravity="textStart"
+                app:iconPadding="0dp"
+                app:iconTint="?attr/colorOnTertiary" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/queueStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginBottom="8dp"
+            android:textAppearance="?attr/textAppearanceBodySmall"
+            android:visibility="gone" />
+    </LinearLayout>
+
+    <!-- ===== Drawer: setup, presenter options, jacket ===== -->
+    <ScrollView
+        android:layout_width="320dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:background="?attr/colorSurfaceContainerLow">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/app_name"
+                android:textAppearance="?attr/textAppearanceHeadlineSmall"
+                android:textColor="?attr/colorPrimary"
+                android:textStyle="bold" />
+
+            <!-- Laptop -->
+            <TextView style="@style/Section" android:text="@string/section_laptop" />
+            <TextView
+                android:id="@+id/status"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/status_starting" />
+            <Button
+                android:id="@+id/discoverable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/make_discoverable" />
+            <Button
+                android:id="@+id/reconnect"
+                style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/reconnect" />
+
+            <!-- Presenter -->
+            <TextView style="@style/Section" android:text="@string/section_presenter" />
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/volumeKeys"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/volume_keys" />
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/keepScreenOn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/keep_screen_on" />
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/pressEnter"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/press_enter" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/present_key" />
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/presentAppGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+                <Button
+                    android:id="@+id/presentPowerPoint"
+                    style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingHorizontal="4dp"
+                    android:text="@string/present_powerpoint" />
+                <Button
+                    android:id="@+id/presentGoogle"
+                    style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:paddingHorizontal="4dp"
+                    android:text="@string/present_google" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/sensitivity" />
+            <com.google.android.material.slider.Slider
+                android:id="@+id/sensitivity"
+                style="@style/Widget.Material3Expressive.Slider.Small"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:stepSize="100"
+                android:valueFrom="200"
+                android:valueTo="4000"
+                app:tickVisible="false"
+                app:trackStopIndicatorSize="0dp" />
+
+            <!-- Watch -->
+            <TextView style="@style/Section" android:text="@string/section_watch" />
+            <TextView
+                android:id="@+id/watchStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/watch_none" />
+
+            <!-- Jacket -->
+            <TextView style="@style/Section" android:text="@string/section_jacket" />
+            <TextView
+                android:id="@+id/tagStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/tag_none" />
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/findJacket"
+                    style="@style/Widget.Material3Expressive.Button.TonalButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/find_jacket" />
+                <Button
+                    android:id="@+id/forgetJacket"
+                    style="@style/Widget.Material3Expressive.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:text="@string/forget_jacket" />
+            </LinearLayout>
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/modeGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+                <Button
+                    android:id="@+id/modePresentation"
+                    style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/mode_presentation" />
+                <Button
+                    android:id="@+id/modeLlm"
+                    style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/mode_llm" />
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+            <com.google.android.material.materialswitch.MaterialSwitch
+                android:id="@+id/sleeveAir"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/sleeve_air" />
+            <TextView
+                android:id="@+id/mappingTitle"
+                style="@style/Section"
+                android:text="@string/section_mapping" />
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="@string/mapping_note"
+                android:textAppearance="?attr/textAppearanceBodySmall" />
+            <LinearLayout
+                android:id="@+id/mappings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+            <Button
+                android:id="@+id/quit"
+                style="@style/Widget.Material3Expressive.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="@string/quit"
+                app:icon="@drawable/ic_close"
+                app:iconGravity="textStart" />
+
+            <TextView
+                android:id="@+id/version"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:textAppearance="?attr/textAppearanceBodySmall" />
+        </LinearLayout>
+    </ScrollView>
+</androidx.drawerlayout.widget.DrawerLayout>

@@ -1,0 +1,70 @@
+<resources>
+    <string name="app_name">Dreamcoat</string>
+
+    <string name="section_laptop">Laptop</string>
+    <string name="status_starting">Starting Bluetooth keyboard/mouse…</string>
+    <string name="status_ready">Ready — pair or reconnect from your laptop</string>
+    <string name="status_connecting">Connecting to %1$s…</string>
+    <string name="status_connected">Connected to %1$s</string>
+    <string name="status_unavailable">Bluetooth is off, or this phone can\'t act as a keyboard/mouse</string>
+    <string name="status_need_permission">Dreamcoat needs the Nearby devices permission to work</string>
+    <string name="make_discoverable">Make discoverable</string>
+    <string name="reconnect">Reconnect laptop</string>
+
+    <string name="section_jacket">Jacket</string>
+    <string name="tag_none">No jacket paired yet</string>
+    <string name="tag_connecting">Connecting to tag…</string>
+    <string name="tag_no_jacket">Tag connected — snap it onto the jacket cuff</string>
+    <string name="tag_ready">Jacket ready</string>
+    <string name="tag_disconnected">Tag disconnected — it will reconnect when in range</string>
+    <string name="find_jacket">Find jacket</string>
+    <string name="forget_jacket">Forget</string>
+    <string name="scanning_title">Looking for Jacquard tags…</string>
+    <string name="scanning_hint">Keep the tag snapped on the cuff. If none appear, press and hold the tag\'s button for 4 seconds until the LED flashes.</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="section_mode">Mode</string>
+    <string name="mode_presentation">Slides</string>
+    <string name="mode_llm">LLM demo</string>
+    <string name="sleeve_air">Sleeve air mouse (gestures pause)</string>
+
+    <string name="section_prompt">Prompt</string>
+    <string name="prompt_hint">Type or dictate</string>
+    <string name="dictate">Dictate</string>
+    <string name="no_recognizer">No speech recognizer found — use the mic on the keyboard instead</string>
+    <string name="press_enter">Press Enter after typing</string>
+    <string name="type_now">Type to PC</string>
+    <string name="queue_prompt">Queue for double-tap</string>
+    <string name="queue_empty">Queue empty</string>
+    <string name="queue_status">%1$d queued — next: \"%2$s\"</string>
+    <string name="clear">Clear</string>
+
+    <string name="key_esc">Esc</string>
+    <string name="next">Next</string>
+    <string name="back">Back</string>
+    <string name="black_screen">Black</string>
+    <string name="open_menu">Open menu</string>
+    <string name="chip_connected">%1$s</string>
+    <string name="chip_not_connected">Not connected</string>
+    <string name="section_presenter">Presenter</string>
+    <string name="volume_keys">Volume keys change slides, even when locked</string>
+    <string name="keep_screen_on">Keep screen on while open</string>
+    <string name="version">Dreamcoat %1$s</string>
+    <string name="quit">Quit Dreamcoat (phone and watch)</string>
+
+    <string name="present">Present</string>
+    <string name="present_key">Present button resumes in</string>
+    <string name="present_powerpoint">PowerPoint</string>
+    <string name="present_google">Google</string>
+
+    <string name="section_watch">Pixel Watch</string>
+    <string name="watch_none">Open Dreamcoat on your watch</string>
+    <string name="watch_connected">Watch connected: %1$s</string>
+
+    <string name="section_mapping">Gestures — %1$s mode</string>
+    <string name="mapping_note">Jacket and watch share these. On the watch: double pinch = Brush Out, wrist turn = Brush In, tap mode label = Double Tap, long-press = Cover.</string>
+    <string name="sensitivity">Air mouse speed</string>
+    <string name="hold_to_aim">Hold to\naim</string>
+    <string name="left_click">Left\nclick</string>
+    <string name="right_click">Right\nclick</string>
+</resources>

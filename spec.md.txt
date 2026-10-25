@@ -1,0 +1,91 @@
+# Project Specification: Jacquard BLE-to-HID Presentation & Prompt Bridge
+
+## 1. Overview & Objective
+Transform Google's archived, open-source `JacquardSDKAndroid` repository into a modern, standalone Android controller application for a **Gen 2 Levi's Jacquard Trucker Jacket (`77381` / Universal Jacquard Tag)**.
+
+The Android device will act as a **zero-install middleman bridge**:
+1. **Input Side (BLE):** Maintains a Bluetooth Low Energy (BLE) connection to the Levi's Jacquard jacket cuff using the local `sdk/` module from `google/JacquardSDKAndroid`.
+2. **Output Side (Bluetooth HID):** Simultaneously registers the Android phone as a standard, driverless **Bluetooth HID Composite Keyboard + Mouse** (`BluetoothHidDevice` API) paired to a corporate Windows or macOS laptop.
+3. **Control Logic:** Translates physical jacket sleeve gestures, phone gyroscope movement (Air Mouse), and Android voice-to-text dictation into standard USB HID keyboard/mouse reports sent to the host computer, while firing visual (RGB LED) and tactile (haptic vibration) feedback on the jacket cuff.
+
+---
+
+## 2. Environment & Toolchain Requirements (Headless CLI)
+The user has never developed for Android before and does not have Android Studio installed. The coding agent must bootstrap the entire environment via CLI:
+1. **Java Development Kit (JDK):** Verify or install OpenJDK 17 (the sweet spot for Gradle/Android builds bridging legacy and modern plugins).
+2. **Android SDK Command-Line Tools:** Download and configure the headless Android `cmdline-tools` (`sdkmanager`) and `platform-tools` (`adb`) if not already present on the system.
+3. **SDK Packages & Licenses:** Accept all SDK licenses automatically (`yes | sdkmanager --licenses`) and install required `platform-tools`, `build-tools`, and `platforms;android-34` (or `android-35`).
+4. **Local Path Config:** Automatically generate `local.properties` pointing `sdk.dir` to the installed Android SDK path so `./gradlew` works out of the box.
+5. **USB Deployment:** Verify device connection via `adb devices` and install the compiled debug APK directly onto the connected phone via `./gradlew :sample:installDebug` or `adb install -r`.
+
+---
+
+## 3. System Architecture
+
+### 3.1 Module A: Offline Jacquard SDK Modernization (`sdk/` & `sample/`)
+- **Source Repo:** `https://github.com/google/JacquardSDKAndroid.git`
+- **Offline Bypass:** Google's Jacquard cloud servers and Firmware Update (DFU) endpoints were shut down in 2023. All `API_KEY` requirements, cloud checks, and mandatory DFU checks must be stubbed out or bypassed so BLE pairing, gesture subscriptions, continuous touch, LEDs, and haptics work 100% offline.
+- **Modern Android Compatibility:**
+  - Upgrade `targetSdkVersion` and `compileSdkVersion` to 34+ so the app runs cleanly on modern Android (Android 14/15/16/17).
+  - Keep Gradle/AGP/Protobuf versions balanced: upgrade enough to compile with JDK 17 and Target SDK 34+, without breaking the legacy `protobuf-gradle-plugin` or Dagger 2 code generation inside `sdk/`.
+  - Add modern Android 12+ runtime Bluetooth permissions to `AndroidManifest.xml` and runtime permission request flows:
+    - `android.permission.BLUETOOTH_SCAN` (`neverForLocation`)
+    - `android.permission.BLUETOOTH_CONNECT`
+    - `android.permission.BLUETOOTH_ADVERTISE`
+    - `android.permission.FOREGROUND_SERVICE` / `FOREGROUND_SERVICE_CONNECTED_DEVICE` (so gesture listening stays alive when the phone screen is off in the user's pocket).
+
+### 3.2 Module B: Bluetooth HID Composite Engine (`hid/HidBridgeManager`)
+Implement Android's native `BluetoothHidDevice` API (`BluetoothProfile.HID_DEVICE`) using a single composite USB HID Report Descriptor containing two Report IDs:
+
+1. **Report ID `1` — Standard 8-Byte Keyboard Report:**
+   - Byte 0: Modifier keys bitmask (`Left Ctrl`, `Left Shift`, `Left Alt`, `Left GUI/Win`).
+   - Byte 1: Reserved (`0x00`).
+   - Bytes 2–7: Up to 6 simultaneous USB HID Usage IDs.
+   - Must support: `Right Arrow` (`0x4F`), `Left Arrow` (`0x50`), `Down Arrow` (`0x51`), `Up Arrow` (`0x52`), `Page Down` (`0x4E`), `Page Up` (`0x4B`), `Enter` (`0x28`), `Escape` (`0x29`), `Backspace` (`0x2A`), `Tab` (`0x2B`), `Space` (`0x2C`), `F5` (`0x3E`), and full printable ASCII characters (`a-z`, `A-Z`, `0-9`, punctuation) mapped to their respective HID keycodes + Shift modifier.
+2. **Report ID `2` — Standard 4-Byte Relative Mouse Report:**
+   - Byte 0: Buttons bitmask (Bit 0 = Left Click, Bit 1 = Right Click, Bit 2 = Middle Click).
+   - Byte 1: Signed 8-bit relative X movement (`-127` to `127`).
+   - Byte 2: Signed 8-bit relative Y movement (`-127` to `127`).
+   - Byte 3: Signed 8-bit vertical scroll wheel (`-127` to `127`).
+3. **Key Capabilities of `HidBridgeManager`:**
+   - `sendKeyTap(usageId: Int, modifier: Int = 0)`: Sends key-down report followed by an all-zero key-up release report after a 15ms delay.
+   - `typeTextString(text: String, pressEnterAtEnd: Boolean)`: Iterates through characters in a string, maps each character to `(modifier, usageId)`, sends key-down and key-up reports with a configurable inter-key delay (default `20ms` so corporate Windows/web browsers never drop characters), and optionally appends `Enter`.
+   - `sendMouseDelta(dx: Int, dy: Int, leftButton: Boolean, rightButton: Boolean, scroll: Int = 0)`: Sends relative mouse movement and click states.
+
+---
+
+## 4. Functional Features & User Workflows
+
+### 4.1 Gesture Profiles & Sleeve Mapping
+Subscribe to `GestureNotificationSubscription` on the connected Jacquard tag and route incoming gestures through an active profile:
+
+| Sleeve Gesture | Mode 1: Presentation Mode (Default) | Mode 2: LLM / Live Demo Mode | Cuff Feedback (LED + Haptic) |
+|---|---|---|---|
+| **Brush Out (Forward)** | `Right Arrow` (Next Slide) | `Alt + Tab` (Switch between Slides & Browser) | Flash LED **Green** (300ms) |
+| **Brush In (Backward)** | `Left Arrow` (Previous Slide) | `Escape` or `Backspace` (Configurable) | Flash LED **Blue** (300ms) |
+| **Double Tap** | `Enter` (or `Space` / Click) | **Send Queued Voice Prompt + `Enter`** (or `Enter` if queue is empty) | 1 Short Haptic Pulse |
+| **Cover (Palm over cuff)**| **Toggle Mode** (Switch to Mode 2) | **Toggle Mode** (Switch to Mode 1) | 2 Distinct Haptic Pulses + Solid 2s LED (Cyan = Mode 1, Purple = Mode 2) |
+
+*(All gesture actions must also be customizable via dropdowns in the app UI).*
+
+### 4.2 Gyroscope Air Mouse + "Cuff Clutch"
+- Uses the Android phone's fused `Sensor.TYPE_GAME_ROTATION_VECTOR` to compute smooth yaw/pitch angular velocity deltas and translate them into `(dx, dy)` mouse HID reports at ~60Hz.
+- **Clutch Mechanism (Preventing unwanted cursor drift):** The Air Mouse only transmits cursor movement when the clutch is engaged via either:
+  1. **On-Screen Hold Button:** Holding a large thumb button ("Hold to Aim Cursor") on the phone screen, with adjacent Left-Click / Right-Click zones.
+  2. **Optional Sleeve Touch Clutch:** Holding fingers continuously on the jacket cuff threads (`ContinuousTouchNotificationSubscription` where touch lines > threshold) while pointing the phone.
+
+### 4.3 Voice-to-Text Prompt Relay (Bypassing Corporate PC Mic Policies)
+- Provides a large text input box on the main dashboard focused for Android's native keyboard voice dictation (Gboard microphone) or Android's built-in `SpeechRecognizer` intent.
+- Includes two delivery modes:
+  - **"Instant Type to PC" Button:** Immediately streams the dictated text to the laptop as Bluetooth HID keystrokes and hits `Enter`.
+  - **"Queue for Sleeve Double-Tap" Toggle:** Holds the dictated text in memory so the user can put the phone back in their pocket, walk across the stage, and **Double Tap their jacket cuff** to watch the prompt type itself live onto the projection screen and hit `Enter`.
+
+---
+
+## 5. Execution Phases & Verification Gates
+
+- **Phase 0: Environment & Toolchain Bootstrap.** Check OS, install JDK 17 + Android `cmdline-tools` + `platform-tools` + SDK 34 via CLI, configure `local.properties`, and verify `adb` is functional.
+- **Phase 1: Clone & Modernize Jacquard SDK.** Clone `google/JacquardSDKAndroid`, strip/bypass cloud DFU/API checks, update permissions for Android 12+, and get `./gradlew :sample:assembleDebug` compiling cleanly with zero errors.
+- **Phase 2: Build the Bluetooth HID Composite Engine.** Implement `HidBridgeManager` with the Keyboard + Mouse descriptor, text-typing serializer, and gyroscope Air Mouse sensor loop.
+- **Phase 3: Build the Bridge Dashboard & Wire Jacquard Signals.** Create the unified `BridgeDashboardActivity` (accessible immediately on launch), connect `JacquardManager` gesture/LED/haptic streams to `HidBridgeManager`, and add the Voice-to-Text relay and profile switcher.
+- **Phase 4: Compile, Deploy via ADB, and Generate User Guide.** Run `./gradlew :sample:assembleDebug`, install onto the user's connected phone via `adb install -r`, and write a concise `HOW_TO_USE.md` covering how to pair the jacket and Windows laptop.

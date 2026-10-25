@@ -1,0 +1,19 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+
+dependencyResolutionManagement {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "Dreamcoat"
+include ':dreamcoat'
+include ':sdk'
+project(':sdk').projectDir = new File(settingsDir, 'JacquardSDKAndroid/sdk/sdk')
