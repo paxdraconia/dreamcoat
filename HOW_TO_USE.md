@@ -165,7 +165,7 @@ Curly quotes and dashes from dictation are converted to plain ones automatically
 | App stops in the background | Make sure the Dreamcoat notification is present; don't swipe it away. Settings → Apps → Dreamcoat → Battery → **Unrestricted** helps. |
 
 ### Rebuilding / reinstalling (for reference)
-From `C:\Users\paxdr\Documents\Dreamcoat` in a terminal:
+From the project folder in a terminal:
 
 The installed app is the signed **release** build. Its signing key is
 `%USERPROFILE%\.dreamcoat\release.jks`, with its password in `%USERPROFILE%\.gradle\gradle.properties`.
