@@ -143,9 +143,9 @@ engages the cursor instead of the on-screen pad.
 2. Then either:
    - **➤ (send)**: types it into whatever has focus on the laptop right now (and presses Enter
      if *Press Enter after typing* is on in the ☰ menu).
-   - **Queue** (the list-plus icon, shown only while the jacket is connected): holds it. Pocket
-     the phone, walk to the stage, switch to **LLM demo** mode and **double-tap the cuff**. The
-     prompt types itself into the focused window and hits Enter.
+   - **Queue** (the list-plus icon, shown while the jacket or the watch is connected): holds it.
+     Pocket the phone, walk to the stage, switch to **LLM demo** mode and **double-tap the cuff**
+     (or tap the watch's top line). The prompt types itself into the focused window and hits Enter.
 3. You can queue several prompts; each double tap sends the next one. Long-press the
    "N queued" line under the bar to clear the queue.
 
@@ -183,6 +183,11 @@ have to uninstall it first and lose its settings.
 ```bash
 adb install -r dreamcoat/build/outputs/apk/release/dreamcoat-release.apk
 ```
+
+**Building without the jacket:** jacket support is on by default. To leave it out, add
+`DREAMCOAT_JACKET=false` to `%USERPROFILE%\.gradle\gradle.properties` and rebuild. The Jacquard
+SDK then never starts (no tag scanning). The ☰ menu drops the Jacket section, and the gesture
+settings are labelled with their watch gestures. Everything else, including the watch, works the same.
 
 The watch app is a separate build in `watch/` (newer Android tooling). It uses the same signing
 key, which it must for the watch and phone to talk. Build it from the `watch` folder, then install

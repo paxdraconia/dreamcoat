@@ -62,6 +62,7 @@
     <string name="watch_connected">Watch connected: %1$s</string>
 
     <string name="section_mapping">Gestures — %1$s mode</string>
+    <string name="mapping_note_watch">What each watch gesture does, per mode. Swipes and the crown follow Double pinch / Wrist turn.</string>
     <string name="mapping_note">Jacket and watch share these. On the watch: double pinch = Brush Out, wrist turn = Brush In, tap mode label = Double Tap, long-press = Cover.</string>
     <string name="sensitivity">Air mouse speed</string>
     <string name="hold_to_aim">Hold to\naim</string>

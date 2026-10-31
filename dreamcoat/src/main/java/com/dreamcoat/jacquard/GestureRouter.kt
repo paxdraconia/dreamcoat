@@ -42,7 +42,8 @@ val MAPPABLE_GESTURES = listOf(
 class GestureRouter(
     private val prefs: SharedPreferences,
     private val hid: HidBridgeManager,
-    private val link: JacquardLink,
+    /** Null without jacket support; gestures then come only from the watch. */
+    private val link: JacquardLink?,
     private val sendPrompt: () -> Unit,
     private val resumeShow: () -> Unit,
     private val onModeChanged: (Mode) -> Unit,
@@ -95,6 +96,7 @@ class GestureRouter(
     }
 
     private fun feedback(gesture: GestureType, action: Action) {
+        val link = link ?: return
         if (action == Action.TOGGLE_MODE) {
             link.haptic(2)
             link.led(mode.r, mode.g, mode.b, 2000, solid = true)

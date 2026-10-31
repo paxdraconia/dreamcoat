@@ -45,6 +45,7 @@ import com.dreamcoat.jacquard.Action
 import com.dreamcoat.jacquard.JacquardLink
 import com.dreamcoat.jacquard.MAPPABLE_GESTURES
 import com.dreamcoat.jacquard.Mode
+import com.google.android.jacquard.sdk.model.Gesture.GestureType
 import com.google.android.jacquard.sdk.rx.Fn
 import com.google.android.jacquard.sdk.rx.Signal
 import com.google.android.jacquard.sdk.tag.AdvertisedJacquardTag
@@ -138,7 +139,7 @@ class BridgeDashboardActivity : AppCompatActivity() {
             it.onState = null
             it.onQuit = null
             it.setScreenClutch(false)
-            it.link.stopScanning()
+            it.link?.stopScanning()
             unbindService(connection)
         }
         super.onDestroy()
@@ -190,8 +191,9 @@ class BridgeDashboardActivity : AppCompatActivity() {
         b.statusChip.setTextColor(ContextCompat.getColor(this, R.color.deep_space_blue))
         b.statusChip.chipIconTint = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.deep_space_blue))
         b.volumeKeys.isChecked = service?.volumeKeysEnabled ?: true
-        val jacketReady = s.tag == JacquardLink.Status.READY
-        b.queuePrompt.visibility = if (jacketReady) View.VISIBLE else View.GONE
+        // Queued prompts are sent by a double tap on the cuff or a tap on the watch's status line.
+        val canSendQueued = s.tag == JacquardLink.Status.READY || s.watchName != null
+        b.queuePrompt.visibility = if (canSendQueued) View.VISIBLE else View.GONE
         b.status.text = when (s.hid.status) {
             Status.CONNECTED -> getString(R.string.status_connected, s.hid.hostName)
             Status.CONNECTING -> getString(R.string.status_connecting, s.hid.hostName)
@@ -199,18 +201,20 @@ class BridgeDashboardActivity : AppCompatActivity() {
             Status.REGISTERING -> getString(R.string.status_starting)
             Status.UNAVAILABLE -> getString(R.string.status_unavailable)
         }
-        b.tagStatus.text = getString(
-            when (s.tag) {
-                JacquardLink.Status.NO_TAG -> R.string.tag_none
-                JacquardLink.Status.CONNECTING -> R.string.tag_connecting
-                JacquardLink.Status.CONNECTED_NO_JACKET -> R.string.tag_no_jacket
-                JacquardLink.Status.READY -> R.string.tag_ready
-                JacquardLink.Status.DISCONNECTED -> R.string.tag_disconnected
-            }
-        )
-        b.forgetJacket.isEnabled = s.tag != JacquardLink.Status.NO_TAG
+        if (s.tag != null) {
+            b.tagStatus.text = getString(
+                when (s.tag) {
+                    JacquardLink.Status.NO_TAG -> R.string.tag_none
+                    JacquardLink.Status.CONNECTING -> R.string.tag_connecting
+                    JacquardLink.Status.CONNECTED_NO_JACKET -> R.string.tag_no_jacket
+                    JacquardLink.Status.READY -> R.string.tag_ready
+                    JacquardLink.Status.DISCONNECTED -> R.string.tag_disconnected
+                }
+            )
+            b.forgetJacket.isEnabled = s.tag != JacquardLink.Status.NO_TAG
+            b.sleeveAir.isChecked = s.sleeveAirMouse
+        }
         b.modeGroup.check(if (s.mode == Mode.PRESENTATION) R.id.modePresentation else R.id.modeLlm)
-        b.sleeveAir.isChecked = s.sleeveAirMouse
         b.watchStatus.text = s.watchName?.let { getString(R.string.watch_connected, it) }
             ?: getString(R.string.watch_none)
         b.queueStatus.visibility = if (s.queue.isEmpty()) View.GONE else View.VISIBLE
@@ -233,7 +237,8 @@ class BridgeDashboardActivity : AppCompatActivity() {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = android.view.Gravity.CENTER_VERTICAL
             }
-            row.addView(TextView(this).apply { text = gesture.description }, LinearLayout.LayoutParams(0, -2, 0.8f))
+            val label = if (BuildConfig.JACKET) gesture.description else WATCH_LABELS[gesture]
+            row.addView(TextView(this).apply { text = label }, LinearLayout.LayoutParams(0, -2, 0.8f))
             val spinner = Spinner(this).apply {
                 adapter = ArrayAdapter(
                     this@BridgeDashboardActivity, android.R.layout.simple_spinner_dropdown_item,
@@ -263,15 +268,20 @@ class BridgeDashboardActivity : AppCompatActivity() {
         b.reconnect.setOnClickListener { service?.hid?.reconnect() }
         b.quit.setOnClickListener { service?.quit() ?: finishAndRemoveTask() }
 
-        b.findJacket.setOnClickListener { showScanDialog() }
-        b.forgetJacket.setOnClickListener { service?.link?.forget() }
+        if (BuildConfig.JACKET) {
+            b.findJacket.setOnClickListener { showScanDialog() }
+            b.forgetJacket.setOnClickListener { service?.link?.forget() }
+            b.sleeveAir.setOnCheckedChangeListener { _, on ->
+                if (!rendering) service?.setSleeveAirMouse(on)
+            }
+        } else {
+            b.jacketSection.visibility = View.GONE
+            b.mappingNote.setText(R.string.mapping_note_watch)
+        }
 
         b.modeGroup.addOnButtonCheckedListener { _, id, checked ->
             if (rendering || !checked) return@addOnButtonCheckedListener
             service?.router?.setMode(if (id == R.id.modePresentation) Mode.PRESENTATION else Mode.LLM_DEMO)
-        }
-        b.sleeveAir.setOnCheckedChangeListener { _, on ->
-            if (!rendering) service?.setSleeveAirMouse(on)
         }
 
         b.mic.setOnClickListener {
@@ -383,5 +393,15 @@ class BridgeDashboardActivity : AppCompatActivity() {
             MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> { v.isPressed = false; set(false) }
         }
         return true
+    }
+
+    companion object {
+        /** Row labels for the gesture dropdowns when there's no jacket: what each slot is on the watch. */
+        private val WATCH_LABELS = mapOf(
+            GestureType.BRUSH_OUT to "Double pinch",
+            GestureType.BRUSH_IN to "Wrist turn",
+            GestureType.DOUBLE_TAP to "Tap top line",
+            GestureType.SHORT_COVER to "Hold top line",
+        )
     }
 }

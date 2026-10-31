@@ -331,33 +331,50 @@
                 android:layout_height="wrap_content"
                 android:text="@string/watch_none" />
 
-            <!-- Jacket -->
-            <TextView style="@style/Section" android:text="@string/section_jacket" />
-            <TextView
-                android:id="@+id/tagStatus"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="@string/tag_none" />
+            <!-- Jacket (hidden when built without jacket support) -->
             <LinearLayout
+                android:id="@+id/jacketSection"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal">
-                <Button
-                    android:id="@+id/findJacket"
-                    style="@style/Widget.Material3Expressive.Button.TonalButton"
-                    android:layout_width="0dp"
+                android:orientation="vertical">
+                <TextView style="@style/Section" android:text="@string/section_jacket" />
+                <TextView
+                    android:id="@+id/tagStatus"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="@string/find_jacket" />
-                <Button
-                    android:id="@+id/forgetJacket"
-                    style="@style/Widget.Material3Expressive.Button.TextButton"
-                    android:layout_width="wrap_content"
+                    android:text="@string/tag_none" />
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:text="@string/forget_jacket" />
+                    android:layout_marginTop="8dp"
+                    android:orientation="horizontal">
+                    <Button
+                        android:id="@+id/findJacket"
+                        style="@style/Widget.Material3Expressive.Button.TonalButton"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/find_jacket" />
+                    <Button
+                        android:id="@+id/forgetJacket"
+                        style="@style/Widget.Material3Expressive.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:text="@string/forget_jacket" />
+                </LinearLayout>
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/sleeveAir"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/sleeve_air" />
             </LinearLayout>
+
+            <!-- Gestures (jacket and watch) -->
+            <TextView
+                android:id="@+id/mappingTitle"
+                style="@style/Section"
+                android:text="@string/section_mapping" />
             <com.google.android.material.button.MaterialButtonToggleGroup
                 android:id="@+id/modeGroup"
                 android:layout_width="match_parent"
@@ -380,18 +397,11 @@
                     android:layout_weight="1"
                     android:text="@string/mode_llm" />
             </com.google.android.material.button.MaterialButtonToggleGroup>
-            <com.google.android.material.materialswitch.MaterialSwitch
-                android:id="@+id/sleeveAir"
+            <TextView
+                android:id="@+id/mappingNote"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="@string/sleeve_air" />
-            <TextView
-                android:id="@+id/mappingTitle"
-                style="@style/Section"
-                android:text="@string/section_mapping" />
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
                 android:text="@string/mapping_note"
                 android:textAppearance="?attr/textAppearanceBodySmall" />
             <LinearLayout

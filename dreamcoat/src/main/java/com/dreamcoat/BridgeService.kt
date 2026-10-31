@@ -28,8 +28,8 @@ import com.google.android.jacquard.sdk.model.TouchData
 import com.google.android.jacquard.sdk.model.TouchMode
 
 /**
- * Foreground service that owns all Bluetooth state (HID link to the laptop and BLE link to the
- * jacket), so everything keeps working with the screen off and the phone in a pocket.
+ * Foreground service that owns all Bluetooth state (HID link to the laptop, the watch, and the BLE
+ * link to the jacket), so everything keeps working with the screen off and the phone in a pocket.
  * Activities bind to it and observe [state].
  */
 class BridgeService : Service() {
@@ -40,7 +40,8 @@ class BridgeService : Service() {
 
     data class State(
         val hid: HidBridgeManager.State,
-        val tag: JacquardLink.Status,
+        /** Null when the app is built without jacket support. */
+        val tag: JacquardLink.Status?,
         val mode: Mode,
         val sleeveAirMouse: Boolean,
         val queue: List<String>,
@@ -53,7 +54,8 @@ class BridgeService : Service() {
         private set
     lateinit var airMouse: AirMouse
         private set
-    lateinit var link: JacquardLink
+    /** The jacket tag link; null when built without jacket support (BuildConfig.JACKET). */
+    var link: JacquardLink? = null
         private set
     lateinit var router: GestureRouter
         private set
@@ -67,7 +69,7 @@ class BridgeService : Service() {
     private var sleeveClutch = false
 
     val state: State
-        get() = State(hid.state, link.status, router.mode, sleeveAirMouse, promptQueue.toList(),
+        get() = State(hid.state, link?.status, router.mode, sleeveAirMouse, promptQueue.toList(),
             if (::watch.isInitialized) watch.watchName else null)
 
     override fun onCreate() {
@@ -81,11 +83,14 @@ class BridgeService : Service() {
         airMouse = AirMouse(this) { dx, dy -> hid.moveMouse(dx, dy) }.apply {
             sensitivity = prefs.getFloat(PREF_SENSITIVITY, AirMouse.DEFAULT_SENSITIVITY)
         }
-        link = JacquardLink(this)
+        // Without jacket support the Jacquard SDK is never touched: no BLE scans, no SDK logger.
+        link = if (BuildConfig.JACKET) JacquardLink(this) else null
         router = GestureRouter(prefs, hid, link, ::sendNextPrompt, ::resumeShow) { publish() }
-        link.onStatus = { publish() }
-        link.onGesture = { g -> if (!sleeveAirMouse) router.onGesture(g) }
-        link.onTouch = ::onSleeveTouch
+        link?.apply {
+            onStatus = { publish() }
+            onGesture = { g -> if (!sleeveAirMouse) router.onGesture(g) }
+            onTouch = ::onSleeveTouch
+        }
 
         // The watch stands in for the jacket: its gestures go through the same mappings.
         watch = WatchLink(this).apply {
@@ -114,7 +119,7 @@ class BridgeService : Service() {
         }
 
         hid.start()
-        link.connectSaved()
+        link?.connectSaved()
         publish()
     }
 
@@ -133,7 +138,7 @@ class BridgeService : Service() {
         airMouse.setClutch(false)
         clicker.release()
         watch.stop()
-        link.destroy()
+        link?.destroy()
         hid.stop()
         super.onDestroy()
     }
@@ -208,7 +213,7 @@ class BridgeService : Service() {
     fun setSleeveAirMouse(on: Boolean) {
         sleeveAirMouse = on
         sleeveClutch = false
-        link.setTouchMode(if (on) TouchMode.CONTINUOUS else TouchMode.GESTURE)
+        link?.setTouchMode(if (on) TouchMode.CONTINUOUS else TouchMode.GESTURE)
         applyClutch()
         publish()
     }
@@ -259,8 +264,9 @@ class BridgeService : Service() {
             JacquardLink.Status.CONNECTING -> "Jacket: connecting"
             JacquardLink.Status.DISCONNECTED -> "Jacket: disconnected"
             JacquardLink.Status.NO_TAG -> "Jacket: not paired"
+            null -> null
         }
-        val text = "${s.mode.label} · $laptop · $jacket"
+        val text = listOfNotNull(s.mode.label, laptop, jacket).joinToString(" · ")
         getSystemService(NotificationManager::class.java).notify(NOTIFICATION_ID, buildNotification(text))
     }
 
