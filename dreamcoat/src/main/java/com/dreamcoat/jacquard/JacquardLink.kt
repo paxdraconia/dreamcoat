@@ -15,6 +15,9 @@ import com.google.android.jacquard.sdk.command.PlayLedPatternCommand.Frame
 import com.google.android.jacquard.sdk.command.PlayLedPatternCommand.LedPatternType
 import com.google.android.jacquard.sdk.command.PlayLedPatternCommand.PlayType
 import com.google.android.jacquard.sdk.connection.ConnectionState
+import com.google.android.jacquard.sdk.log.LogLevel
+import com.google.android.jacquard.sdk.log.PrintLogger
+import com.google.common.collect.ImmutableList
 import com.google.android.jacquard.sdk.model.Component
 import com.google.android.jacquard.sdk.model.GearState
 import com.google.android.jacquard.sdk.model.Gesture.GestureType
@@ -44,7 +47,15 @@ class JacquardLink(context: Context) {
 
     private val prefs = context.getSharedPreferences("jacquard", Context.MODE_PRIVATE)
     private val main = Handler(Looper.getMainLooper())
-    private val manager: JacquardManager = JacquardManager.getInstance().also {
+    private val manager: JacquardManager = run {
+        // The SDK logs through a static logger that is null until initialized; scanning
+        // crashes with an NPE the moment it finds a tag otherwise.
+        PrintLogger.initialize(
+            ImmutableList.of(LogLevel.DEBUG, LogLevel.INFO, LogLevel.WARNING, LogLevel.ERROR, LogLevel.ASSERT),
+            context.applicationContext,
+        )
+        JacquardManager.getInstance()
+    }.also {
         // DfuManagerImpl reads this config on every connection, even though DFU is stubbed.
         it.init(SdkConfig.of("dreamcoat", "offline", null))
     }
@@ -67,7 +78,7 @@ class JacquardLink(context: Context) {
         stopScanning()
         val seen = mutableSetOf<String>()
         scanSub = manager.startScanning()
-            .tapError { main.post { onError(it) } }
+            .tapError { Log.w(TAG, "scan failed", it); main.post { onError(it) } }
             .onNext { t -> if (seen.add(t.address())) main.post { onFound(t) } }
     }
 
