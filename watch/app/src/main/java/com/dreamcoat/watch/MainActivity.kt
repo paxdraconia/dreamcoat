@@ -9,6 +9,7 @@ import android.os.VibrationEffect
 import android.os.VibratorManager
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
+import androidx.activity.addCallback
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -20,6 +21,9 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -69,6 +73,8 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
     private var laptop by mutableStateOf("")
     private var mode by mutableStateOf("PRESENTATION")
     private var phoneReachable by mutableStateOf(false)
+    /** While paused every input is ignored (so stray pinches don't move slides) and the screen may sleep. */
+    private var paused by mutableStateOf(false)
 
     private val messages by lazy { Wearable.getMessageClient(this) }
     private val nodes by lazy { Wearable.getNodeClient(this) }
@@ -84,7 +90,18 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
         }
         startForegroundService(Intent(this, RemoteService::class.java))
         RemoteService.onQuit = { finishAndRemoveTask() }
+        // A stray system back (e.g. a wrist turn the app didn't claim) hides the remote rather than
+        // closing it; Exit is the only way to close.
+        onBackPressedDispatcher.addCallback(this) { moveTaskToBack(true) }
         setContent { MaterialTheme { Remote() } }
+    }
+
+    private fun togglePause() {
+        paused = !paused
+        if (paused) window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        else window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        getSystemService(VibratorManager::class.java)?.defaultVibrator
+            ?.vibrate(VibrationEffect.createOneShot(220, VibrationEffect.DEFAULT_AMPLITUDE))
     }
 
     override fun onResume() {
@@ -113,6 +130,7 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
     }
 
     private fun gesture(name: String) {
+        if (paused) return
         buzz(if (name == "MODE") 2 else 1)
         send(PATH_GESTURE, name)
     }
@@ -171,13 +189,14 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
             ) {
                 // Tap = the jacket's double tap (send queued prompt); long-press = swap mode.
                 Text(
-                    text = (if (mode == "LLM_DEMO") "LLM demo" else "Slides") +
+                    text = if (paused) "Paused · gestures off" else
+                        (if (mode == "LLM_DEMO") "LLM demo" else "Slides") +
                         when {
                             laptop.isNotEmpty() -> " · $laptop"
                             phoneReachable -> " · no laptop"
                             else -> " · open phone app"
                         },
-                    color = modeColor,
+                    color = if (paused) Color(0xFFFFC759) else modeColor,
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
@@ -196,16 +215,43 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
                     gestureId = "dreamcoat_next",
                     container = Color(0xFFFFC759),
                     content = Color(0xFF1A2A45),
-                    height = 96,
+                    fontSize = 28,
+                    modifier = Modifier.fillMaxWidth().height(82.dp),
                 ) { gesture("NEXT") }
-                GestureButton(
-                    label = "Back",
-                    action = OneHandedGestureAction.Dismiss,
-                    gestureId = "dreamcoat_back",
-                    container = Color(0xFF2A3D5E),
-                    content = Color(0xFFF4F6F8),
-                    height = 52,
-                ) { gesture("BACK") }
+                // The row sits near the round edge; narrower so its outer corners aren't clipped.
+                Row(
+                    Modifier.fillMaxWidth(0.86f).height(52.dp),
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    GestureButton(
+                        label = "Back",
+                        action = OneHandedGestureAction.Dismiss,
+                        gestureId = "dreamcoat_back",
+                        container = Color(0xFF2A3D5E),
+                        content = Color(0xFFF4F6F8),
+                        fontSize = 16,
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                    ) { gesture("BACK") }
+                    Button(
+                        onClick = ::togglePause,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = if (paused) Color(0xFFFFC759) else Color(0xFF00C4CC),
+                            contentColor = Color(0xFF1A2A45),
+                        ),
+                        // Default padding leaves too little room for "Resume" in a half-width button.
+                        contentPadding = PaddingValues(horizontal = 4.dp),
+                        modifier = Modifier.weight(1f).fillMaxHeight(),
+                    ) {
+                        Text(
+                            if (paused) "Resume" else "Pause",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                    }
+                }
                 // Leaving with the side button keeps the remote running (raise wrist to return);
                 // Exit really closes it.
                 Text(
@@ -229,9 +275,12 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
         gestureId: String,
         container: Color,
         content: Color,
-        height: Int,
+        fontSize: Int,
+        modifier: Modifier,
         onClick: () -> Unit,
     ) {
+        // Stays enabled while paused so the gesture stays claimed (gesture() ignores it); dimmed instead.
+        val alpha = if (paused) 0.35f else 1f
         val config = rememberOneHandedGestureConfiguration(
             action = action,
             gestureId = gestureId,
@@ -243,11 +292,11 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
         Button(
             onClick = onClick,
             interactionSource = interaction,
-            colors = ButtonDefaults.buttonColors(containerColor = container, contentColor = content),
-            modifier = Modifier
-                // The lower button sits near the round edge; narrow it so its corners aren't clipped.
-                .fillMaxWidth(if (height > 80) 1f else 0.78f)
-                .height(height.dp)
+            colors = ButtonDefaults.buttonColors(
+                containerColor = container.copy(alpha = alpha),
+                contentColor = content.copy(alpha = alpha),
+            ),
+            modifier = modifier
                 .oneHandedGesture(
                     gestureConfiguration = config,
                     onGestureLabel = label,
@@ -259,7 +308,8 @@ class MainActivity : ComponentActivity(), MessageClient.OnMessageReceivedListene
             OneHandedGestureClickIndicator(gestureConfiguration = config, state = indicator) {
                 Text(
                     label,
-                    fontSize = if (height > 80) 30.sp else 18.sp,
+                    fontSize = fontSize.sp,
+                    maxLines = 1,
                     fontWeight = FontWeight.Bold,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.fillMaxWidth(),

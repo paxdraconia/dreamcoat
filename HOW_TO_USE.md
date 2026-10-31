@@ -55,13 +55,17 @@ laptop. Each action buzzes once (twice for a mode swap).
 - **Wrist turn** is a quick flick: from looking at the watch, rotate your forearm sharply so the
   screen turns away from you, then straight back, in about half a second. A slow turn doesn't count.
   If it's unreliable, use the crown or the Back button instead.
+- **Pause** (next to Back) turns off every watch input (pinch, wrist turn, swipes, crown, buttons) so
+  you can stop to help someone without moving slides by accident. The top line turns marigold and
+  reads **Paused · gestures off**, and the screen is allowed to sleep. Tap **Resume** to pick up
+  where you left off. The phone's own buttons and volume keys still work while the watch is paused.
 
 ### Quitting
 - **Phone:** ☰ menu → **Quit Dreamcoat (phone and watch)**, or tap **Quit** on the Dreamcoat
   notification. This disconnects the laptop, gives the volume keys back to the phone, and closes
   the watch app too. Swiping the app away from Recents does *not* stop it.
-- **Watch only:** tap **Exit** under the Back button. The side button only hides the remote; it
-  keeps running so you can raise your wrist to get back to it.
+- **Watch only:** tap **Exit** at the bottom of the remote. The side button (and a system back)
+  only hides the remote; it keeps running so you can raise your wrist to get back to it.
 - Pinch and wrist turn need Wear OS 7. Buttons, swipes and the crown work on any version.
 
 **Put the icon on your home screen:** open the app drawer (swipe up), long-press **Dreamcoat** and
