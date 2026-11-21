@@ -1,3 +1,5 @@
+> **Archived. Continues as Wyrd (private).** The last release is [dreamcoat-v1.1.0](https://github.com/paxdraconia/dreamcoat/releases/tag/dreamcoat-v1.1.0).
+
 # Dreamcoat: How to Use
 
 Dreamcoat turns your Pixel into a Bluetooth keyboard and mouse for your laptop, controlled by your
